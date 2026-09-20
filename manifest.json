@@ -1,0 +1,22 @@
+{
+  "name": "₹6,000 Smart Budget Tracker",
+  "short_name": "Budget Tracker",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6fa",
+  "theme_color": "#2563eb",
+  "description": "Personal monthly expense tracker for a ₹6,000 budget.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
