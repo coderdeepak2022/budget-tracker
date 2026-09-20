@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>₹6,000 Smart Monthly Budget Tracker</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f4f6fa;margin:0;color:#20242a}
+.wrap{max-width:760px;margin:auto;padding:16px}.top{margin-bottom:14px}h1{margin:0 0 5px;font-size:24px}.sub{color:#6b7280;font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:12px 0}.card{background:#fff;border-radius:14px;padding:13px;box-shadow:0 2px 8px #0001}.label{font-size:11px;color:#777}.big{font-size:21px;font-weight:700;margin-top:3px}
+.progress{height:10px;background:#e5e7eb;border-radius:8px;overflow:hidden;margin-top:8px}.bar{height:100%;width:0;background:#2563eb}
+.tabs{display:flex;gap:7px;margin:13px 0;position:sticky;top:0;background:#f4f6fa;padding:5px 0;z-index:3}.tab{flex:1;border:0;border-radius:9px;padding:10px;background:#e5e7eb;font-weight:700}.tab.active{background:#2563eb;color:white}
+.section{display:none}.section.active{display:block}
+.category{background:white;border-radius:14px;padding:14px;margin:9px 0;box-shadow:0 2px 8px #0001}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}.name{font-weight:700}.muted{font-size:12px;color:#737373}.spent{font-size:19px;font-weight:700}.remain{font-size:12px;margin:4px 0 9px}.ok{color:#15803d}.over{color:#dc2626}
+input,select{padding:9px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:white}input[type=number]{width:105px}
+button{border:0;border-radius:8px;padding:9px 11px;background:#2563eb;color:white;font-weight:700}.secondary{background:#6b7280}.danger{background:#dc2626}.small{padding:6px 8px;font-size:12px}
+.history{border-top:1px solid #eee;margin-top:10px;padding-top:7px}.tx{display:flex;justify-content:space-between;gap:7px;padding:5px 0;font-size:13px}
+.form{background:#fff;border-radius:14px;padding:14px;box-shadow:0 2px 8px #0001;margin-bottom:12px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.formgrid>*{width:100%}
+.summaryline{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}.summaryline:last-child{border:0}
+.notice{padding:10px;border-radius:10px;background:#eef5ff;font-size:13px;margin:9px 0}.warning{background:#fff5e8}.success{background:#ecfdf3}
+.empty{color:#777;text-align:center;padding:20px}
+@media(max-width:520px){.cards{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr 1fr}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><h1>₹6,000 Smart Monthly Budget</h1><div class="sub">Record purchases as they happen. The tracker handles the totals for you.</div><button id="installBtn" onclick="installPWA()">📲 Install Budget Tracker</button><div class="pwa-tip">Install it on your home screen for an app-like experience.</div></div>
+
+<div class="cards">
+<div class="card"><div class="label">MONTHLY BUDGET</div><div class="big">₹6,000</div></div>
+<div class="card"><div class="label">TOTAL SPENT</div><div class="big" id="paid">₹0</div></div>
+<div class="card"><div class="label">MONEY LEFT</div><div class="big" id="left">₹6,000</div></div>
+<div class="card"><div class="label">SAFE DAILY ALLOWANCE</div><div class="big" id="daily">₹0</div></div>
+</div>
+<div class="card"><div class="label">BUDGET USED</div><div class="progress"><div class="bar" id="bar"></div></div><div class="muted" id="percent">0%</div></div>
+
+<div class="tabs">
+<button class="tab active" onclick="tab('home',this)">Overview</button>
+<button class="tab" onclick="tab('add',this)">Add Expense</button>
+<button class="tab" onclick="tab('month',this)">Monthly View</button>
+</div>
+
+<div id="home" class="section active">
+<div class="notice" id="status">You have ₹6,000 available for this month.</div>
+<div id="cats"></div>
+<button class="danger" onclick="resetMonth()">Reset Month</button>
+</div>
+
+<div id="add" class="section">
+<div class="form">
+<h3 style="margin-top:0">Quick expense</h3>
+<div class="formgrid">
+<select id="cat"></select>
+<input id="amt" type="number" min="1" placeholder="Amount ₹">
+</div>
+<div style="margin-top:8px"><input id="note" type="text" placeholder="Note (optional)" style="width:100%"></div>
+<div style="margin-top:8px"><button onclick="addExpense()">+ Add expense</button></div>
+</div>
+<div class="notice">Example: select <b>Eggs</b> → enter <b>90</b> → Add. Your Eggs total becomes ₹90/₹270. Add another purchase later and it becomes ₹180/₹270.</div>
+</div>
+
+<div id="month" class="section">
+<div class="card">
+<h3 style="margin-top:0">Monthly control</h3>
+<div class="summaryline"><span>Budget</span><b>₹6,000</b></div>
+<div class="summaryline"><span>Total spent</span><b id="mspent">₹0</b></div>
+<div class="summaryline"><span>Remaining</span><b id="mleft">₹6,000</b></div>
+<div class="summaryline"><span>Number of expenses</span><b id="count">0</b></div>
+<div class="summaryline"><span>Average expense</span><b id="avg">₹0</b></div>
+</div>
+<div class="card" style="margin-top:10px">
+<h3 style="margin-top:0">Where is the money going?</h3>
+<div id="breakdown"></div>
+</div>
+</div>
+</div>
+
+<script>
+const BUDGET=6000;
+const cats=[
+["Rent",3000],["Dal",252],["Eggs",270],["Vegetables + bananas",900],
+["Black coffee",150],["Mustard oil",180],["Spices",120],["LPG",350],
+["College travel",400],["Miscellaneous",378]
+];
+let data=JSON.parse(localStorage.getItem("smartBudgetV3")||"{}");
+function money(n){return "₹"+Math.round(n).toLocaleString("en-IN")}
+function save(){localStorage.setItem("smartBudgetV3",JSON.stringify(data))}
+function total(){return Object.values(data).flat().reduce((s,x)=>s+x.amount,0)}
+function tab(id,btn){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));btn.classList.add("active")}
+function addExpense(){
+ const i=+document.getElementById("cat").value, a=Number(document.getElementById("amt").value), note=document.getElementById("note").value.trim();
+ if(!a||a<=0)return;
+ if(!data[i])data[i]=[];
+ data[i].push({amount:a,date:new Date().toLocaleDateString("en-IN"),note});
+ document.getElementById("amt").value="";document.getElementById("note").value="";
+ save();render();document.querySelectorAll(".tab")[0].click();
+}
+function removeTx(i,j){data[i].splice(j,1);if(!data[i].length)delete data[i];save();render()}
+function resetMonth(){if(confirm("Delete all expenses for this month?")){data={};save();render()}}
+function render(){
+ let spent=total(), left=BUDGET-spent;
+ document.getElementById("paid").textContent=money(spent);
+ document.getElementById("left").textContent=money(left);
+ document.getElementById("left").className="big "+(left<0?"over":"");
+ document.getElementById("bar").style.width=Math.min(spent/BUDGET*100,100)+"%";
+ document.getElementById("percent").textContent=(spent/BUDGET*100).toFixed(1)+"% used";
+ const now=new Date(), daysLeft=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
+ document.getElementById("daily").textContent=money(Math.max(left,0)/daysLeft);
+
+ const select=document.getElementById("cat");select.innerHTML=cats.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join("");
+ const box=document.getElementById("cats");box.innerHTML="";
+ cats.forEach((c,i)=>{
+  const tx=data[i]||[], s=tx.reduce((a,x)=>a+x.amount,0), r=c[1]-s;
+  let hist=tx.length?`<div class="history">${tx.slice().reverse().map((x,j)=>{let real=tx.length-1-j;return `<div class="tx"><span>${x.date}${x.note?" — "+x.note:""}: <b>${money(x.amount)}</b></span><button class="danger small" onclick="removeTx(${i},${real})">×</button></div>`}).join("")}</div>`:"";
+  box.innerHTML+=`<div class="category"><div class="row"><div><div class="name">${c[0]}</div><div class="muted">Budget ${money(c[1])}</div></div><div class="spent">${money(s)}</div></div><div class="remain ${r<0?"over":"ok"}">${r>=0?money(r)+" remaining":money(-r)+" over budget"}</div>${hist}</div>`;
+ });
+ document.getElementById("status").className="notice "+(left<0?"warning":left<1000?"warning":"success");
+ document.getElementById("status").textContent=left<0?money(-left)+" over your ₹6,000 monthly budget.":left<1000?money(left)+" left. Keep an eye on non-essential spending.":"You have "+money(left)+" available for this month.";
+
+ let count=Object.values(data).flat().length;
+ document.getElementById("mspent").textContent=money(spent);document.getElementById("mleft").textContent=money(left);document.getElementById("count").textContent=count;document.getElementById("avg").textContent=money(count?spent/count:0);
+ let bd=document.getElementById("breakdown");bd.innerHTML=cats.map((c,i)=>{let s=(data[i]||[]).reduce((a,x)=>a+x.amount,0);return `<div class="summaryline"><span>${c[0]}</span><b>${money(s)}</b></div>`}).join("");
+}
+render();
+</script>
+
+<style>
+#installBtn{display:none;margin:12px 0;width:100%;font-size:15px}
+.pwa-tip{font-size:12px;color:#666;margin-top:8px}
+</style>
+<script>
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt",(e)=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=document.getElementById("installBtn"); if(b) b.style.display="block";
+});
+async function installPWA(){
+  if(!deferredPrompt){alert("If Install App is not available, open this page in Chrome and use ⋮ → Add to Home screen.");return;}
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  document.getElementById("installBtn").style.display="none";
+}
+window.addEventListener("appinstalled",()=>{
+  const b=document.getElementById("installBtn"); if(b) b.style.display="none";
+});
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+</script>
+</body>
+</html>
